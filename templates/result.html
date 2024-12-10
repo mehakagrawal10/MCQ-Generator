@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Score</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Global Styling */
+        html, body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #0e1a2b;
+            color: #f0f0f0;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+            height: 100%; /* Enable full height for body */
+        }
+
+        body {
+            position: relative;
+            min-height: 100%; /* Ensure content expands beyond viewport */
+        }
+
+        /* Neural Network-Inspired Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom right, #101935, #1a2c48);
+            z-index: -2;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        h1, h2 {
+            color: #00ccff;
+            font-weight: bold;
+        }
+
+        .container {
+            margin-top: 5%;
+            margin-bottom: 50px; /* Ensure spacing at the bottom */
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.1); /* Semi-transparent dark background */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f0f0f0; /* Light text color for contrast */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* Slight shadow for depth */
+            border-radius: 10px; /* Rounded corners */
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn-primary {
+            background-color: #00ccff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #1a1a1a;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #66d9ff;
+            transform: scale(1.05); /* Slight pop effect */
+        }
+
+        .btn-primary:focus {
+            box-shadow: 0 0 15px rgba(102, 217, 255, 0.8);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Effect (Neural Network Dots) -->
+    <canvas id="networkCanvas"></canvas>
+
+    <!-- Start of Content -->
+    <div class="container text-center mt-5">
+        <div class="result-card">
+            <h1>Your Final Score</h1>
+            <p>You answered {{ correct_answers }} out of {{ total }} questions correctly.</p>
+            <h2>Your score: {{ score }}%</h2>
+            <a href="/" class="btn btn-primary mt-4">Try Again</a>
+        </div>
+    </div>
+
+    <!-- JavaScript to handle the floating dots animation -->
+    <script>
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const dots = [];
+        for (let i = 0; i < 50; i++) {
+            dots.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 3 + 1,
+                dx: (Math.random() - 0.5) * 1,
+                dy: (Math.random() - 0.5) * 1,
+            });
+        }
+
+        function drawDots() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            dots.forEach(dot => {
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ccff';
+                ctx.fill();
+
+                dot.x += dot.dx;
+                dot.y += dot.dy;
+
+                if (dot.x < 0 || dot.x > canvas.width) dot.dx *= -1;
+                if (dot.y < 0 || dot.y > canvas.height) dot.dy *= -1;
+            });
+
+            requestAnimationFrame(drawDots);
+        }
+
+        drawDots();
+    </script>
+</body>
+</html>

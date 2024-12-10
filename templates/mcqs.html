@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated MCQs</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Global Styling */
+        html, body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #0e1a2b;
+            color: #f0f0f0;
+            overflow-x: hidden;
+            height: 100%;
+        }
+
+        body {
+            position: relative;
+            min-height: 100%;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom right, #101935, #1a2c48);
+            z-index: -2;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        h1 {
+            color: #00ccff;
+            font-weight: bold;
+        }
+
+        .container {
+            margin-top: 5%;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f0f0f0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .form-check-label {
+            color: #e0e0e0;
+        }
+
+        .form-check-input:checked + .form-check-label {
+            font-weight: bold;
+            color: #00ccff;
+        }
+
+        .correct-answer {
+            display: none;
+            color: #00ff7f;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        button {
+            background-color: #00ccff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #1a1a1a;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #66d9ff;
+            transform: scale(1.05);
+        }
+
+        button:focus {
+            box-shadow: 0 0 15px rgba(102, 217, 255, 0.8);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Effect -->
+    <canvas id="networkCanvas"></canvas>
+
+    <!-- Start of Content -->
+    <h1 class="mt-4 text-center">Generated MCQs</h1>
+    <div class="container" id="mcqs-container">
+        <form action="/submit_answers" method="POST">
+            {% for index, mcq in mcqs %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Q{{ index }}: {{ mcq[0] }}?</h5>
+                        {% set options = ['A', 'B', 'C', 'D'] %}
+                        {% set num_choices = mcq[1]|length %}
+                        {% for choice_index in range(num_choices) %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="answer{{ index }}" id="choice{{ index }}{{ choice_index }}" value="{{ choice_index }}">
+                                <label class="form-check-label" for="choice{{ index }}{{ choice_index }}">
+                                    {{ options[choice_index] }}: {{ mcq[1][choice_index] }}
+                                </label>
+                            </div>
+                        {% endfor %}
+
+                        <div class="correct-answer" data-index="{{ index }}">
+                            Correct Answer: {{ mcq[2] }}
+                        </div>
+
+                        <input type="hidden" name="correct_answer{{ index }}" value="{{ mcq[2] }}">
+                    </div>
+                </div>
+            {% endfor %}
+            <input type="hidden" name="num_questions" value="{{ num_questions }}">
+
+            <!-- Buttons Section -->
+            <button type="button" class="btn btn-info" id="show-correct-answers-btn">Show Correct Answers</button>
+            <button type="button" class="btn btn-warning" id="download-pdf-btn">Download Questions as PDF</button>
+            <button type="submit" class="btn btn-success">Submit Answers</button>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const dots = [];
+        for (let i = 0; i < 50; i++) {
+            dots.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 3 + 1,
+                dx: (Math.random() - 0.5) * 1,
+                dy: (Math.random() - 0.5) * 1,
+            });
+        }
+
+        function drawDots() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            dots.forEach(dot => {
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ccff';
+                ctx.fill();
+
+                dot.x += dot.dx;
+                dot.y += dot.dy;
+
+                if (dot.x < 0 || dot.x > canvas.width) dot.dx *= -1;
+                if (dot.y < 0 || dot.y > canvas.height) dot.dy *= -1;
+            });
+
+            requestAnimationFrame(drawDots);
+        }
+
+        drawDots();
+
+        document.getElementById('show-correct-answers-btn').addEventListener('click', function () {
+    const correctAnswers = document.querySelectorAll('.correct-answer');
+    correctAnswers.forEach(answerDiv => {
+        answerDiv.style.display = 'block';
+    });
+
+    this.style.display = 'none';
+});
+
+// JavaScript to Handle PDF Download
+document.getElementById('download-pdf-btn').addEventListener('click', function () {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: [300, 400], // Increased page width and height
+    });
+
+    // Add title to the PDF
+    pdf.setFontSize(18);
+    pdf.text('Generated MCQs', 10, 10);
+
+    // Get all MCQ cards
+    const questions = document.querySelectorAll('.card');
+    let y = 20; // Initial Y position for content
+
+    questions.forEach((card, index) => {
+        const questionText = card.querySelector('.card-title').innerText.trim(); // Get the question text
+
+        // Add the question to the PDF, wrapping long text
+        pdf.setFontSize(14);
+        pdf.text(`${index + 1}. ${questionText}`, 10, y, { maxWidth: 280 }); // Wrap text to fit within 280mm width
+        y += 10;
+
+        // Fetch options and add them to the PDF
+        const options = card.querySelectorAll('.form-check-label');
+        options.forEach((option, optionIndex) => {
+            pdf.text(`   ${String.fromCharCode(65 + optionIndex)}. ${option.textContent.trim()}`, 10, y);
+            y += 8; // Spacing between options
+        });
+
+        y += 10; // Spacing after the question
+
+        // Add a new page if the content exceeds the page height
+        if (y > 380) { // Adjusted for custom page height
+            pdf.addPage();
+            y = 20; // Reset Y position for the new page
+        }
+    });
+
+    // Save the generated PDF
+    pdf.save('Generated_MCQs.pdf');
+});
+
+
+    
+    </script>
+</body>
+</html>

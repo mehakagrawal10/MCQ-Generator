@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate MCQs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Global Styling */
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #0d1117;
+            color: #f0f0f0;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            display: flex; /* Center alignment */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+
+        /* Neural Network Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 204, 255, 0.2), transparent 70%);
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Send the canvas to the background */
+        }
+
+        .container {
+            background: rgba(20, 20, 30, 0.9); /* Semi-transparent dark */
+            border-radius: 15px;
+            padding: 30px 40px; /* Increased padding */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7); /* Depth shadow */
+            text-align: center;
+            max-width: 500px; /* Adjusted width */
+            width: 100%;
+        }
+
+        h1 {
+            color: #00ccff; /* Neon blue */
+            font-weight: 600; /* Bold */
+            font-size: 2rem; /* Larger font */
+            margin-bottom: 20px;
+        }
+
+        p.lead {
+            font-size: 1.1rem; /* Larger font */
+            margin-bottom: 30px;
+            color: #d1d5db;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column; /* Stack label and input vertically */
+            align-items: center; /* Center align both horizontally */
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #ccc;
+            font-size: 1rem; /* Adjusted font size */
+            margin-bottom: 8px; /* Add spacing between label and input */
+        }
+
+        input[type="file"] {
+            border: 2px dashed #00ccff;
+            padding: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+            color: #fff;
+            font-size: 0.9rem;
+            width: 250px; /* Smaller width */
+            text-align: center; /* Align text in the center */
+        }
+
+        input[type="file"]:hover {
+            border-color: #66d9ff;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        select {
+            border: 2px solid #00ccff;
+            color: #fff;
+            background-color: #1a1a2e;
+            border-radius: 5px;
+            text-align: center;
+            padding: 5px;
+            font-size: 1rem;
+            width: 100px; /* Compact width for numbers */
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #66d9ff;
+            background-color: #222233;
+        }
+
+        button {
+            background-color: #00ccff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1rem; /* Text size */
+            font-weight: bold;
+            color: #1a1a1a;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        button span.emoji {
+            font-size: 2rem; /* Double the size of text */
+            vertical-align: middle;
+        }
+
+        button:hover {
+            background-color: #66d9ff;
+            transform: scale(1.05); /* Slight pop effect */
+        }
+
+        button:focus {
+            box-shadow: 0 0 15px rgba(102, 217, 255, 0.8);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Canvas for Neural Network -->
+    <canvas id="networkCanvas"></canvas>
+    
+    <div class="container">
+        <h1>Generate MCQs</h1>
+        <p class="lead">This application generates multiple-choice questions (MCQs) based on the provided text.</p>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Upload File (PDF or TXT):</label>
+                <input type="file" class="form-control-file" id="file" name="files[]" multiple>
+            </div>
+            <div class="form-group">
+                <label for="num_questions">Number of Questions:</label>
+                <select class="form-control mt-2" id="num_questions" name="num_questions">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">
+                <span class="emoji">📚</span> Generate <span class="emoji">🚀</span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Neural Network Animation
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const nodes = [];
+        for (let i = 0; i < 100; i++) {
+            nodes.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                dx: (Math.random() - 0.5) * 2,
+                dy: (Math.random() - 0.5) * 2,
+                radius: Math.random() * 2 + 1,
+            });
+        }
+
+        function drawNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw lines between nodes
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.strokeStyle = `rgba(0, 204, 255, ${1 - distance / 100})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw nodes
+            for (const node of nodes) {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ccff';
+                ctx.fill();
+            }
+
+            // Update node positions
+            for (const node of nodes) {
+                node.x += node.dx;
+                node.y += node.dy;
+
+                if (node.x < 0 || node.x > canvas.width) node.dx *= -1;
+                if (node.y < 0 || node.y > canvas.height) node.dy *= -1;
+            }
+
+            requestAnimationFrame(drawNetwork);
+        }
+
+        drawNetwork();
+    </script>
+</body>
+</html> 
